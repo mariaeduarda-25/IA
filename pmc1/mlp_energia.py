@@ -2,17 +2,45 @@ import numpy as np
 import csv
 import random
 import time
+from typing import Tuple, List
 
-def sigmoid(x):
+def sigmoid(x: np.ndarray) -> np.ndarray:
     # Usando np.clip para evitar overflow
     x = np.clip(x, -500, 500)
     return 1.0 / (1.0 + np.exp(-x))
 
-def sigmoid_derivative(x):
+def sigmoid_derivative(x: np.ndarray) -> np.ndarray:
     sx = sigmoid(x)
     return sx * (1.0 - sx)
 
-def train_mlp(X, D, num_hidden=10, eta=0.1, epsilon=1e-6, max_epochs=100000):
+def train_mlp(
+    X: np.ndarray, 
+    D: np.ndarray, 
+    num_hidden: int = 10, 
+    eta: float = 0.1, 
+    alpha: float = 0.0, 
+    epsilon: float = 1e-6, 
+    max_epochs: int = 100000
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int, float, float, List[float]]:
+    """
+    Treina um Perceptron Multicamadas (MLP) com suporte a momentum.
+    
+    Parâmetros:
+        X: Matriz NumPy de entradas (amostras x características).
+        D: Matriz NumPy de saídas desejadas (amostras x saídas).
+        num_hidden: Número de neurônios na camada oculta.
+        eta: Taxa de aprendizado.
+        alpha: Fator de momentum.
+        epsilon: Critério de parada do erro quadrático médio (EQM).
+        max_epochs: Número máximo de épocas permitidas.
+        
+    Retorna:
+        W1, b1, W2, b2: Pesos e biases das camadas oculta e de saída.
+        epoch: Número de épocas executadas.
+        MSE: Erro quadrático médio final.
+        tempo: Tempo total de processamento em segundos.
+        mse_history: Histórico do EQM por época.
+    """
     num_samples, num_inputs = X.shape
     num_outputs = D.shape[1]
     
@@ -27,19 +55,18 @@ def train_mlp(X, D, num_hidden=10, eta=0.1, epsilon=1e-6, max_epochs=100000):
     # Bias da camada de saída
     b2 = np.random.rand(1, num_outputs)
     
+    # For momentum
+    vW1 = np.zeros_like(W1)
+    vb1 = np.zeros_like(b1)
+    vW2 = np.zeros_like(W2)
+    vb2 = np.zeros_like(b2)
+    
     epoch = 0
     mse_history = []
     
     start_time = time.time()
     
     while epoch < max_epochs:
-        # Forward pass em lote (Batch) ou online?
-        # A regra de backpropagation clássica geralmente é implementada online (ponto a ponto) 
-        # ou em batch. Vamos fazer online (estocástico) que é o mais comum, 
-        # ou batch? Batch é mais rápido em numpy. 
-        # O enunciado diz "Execute 5 treinamentos para a rede PERCEPTRON...".
-        # Faremos treinamento em BATCH para vetorização e desempenho.
-        
         # Forward pass (Batch)
         # Camada Oculta
         V1 = np.dot(X, W1) + b1
@@ -57,9 +84,6 @@ def train_mlp(X, D, num_hidden=10, eta=0.1, epsilon=1e-6, max_epochs=100000):
         # Critério de Parada
         if MSE < epsilon:
             break
-        if epoch > 0 and abs(mse_history[-1] - mse_history[-2]) < 1e-8:
-            # Critério de parada de estagnação do gradiente
-            pass
             
         # Backward pass (Backpropagation)
         # Delta da camada de saída
@@ -68,18 +92,29 @@ def train_mlp(X, D, num_hidden=10, eta=0.1, epsilon=1e-6, max_epochs=100000):
         # Delta da camada oculta
         delta_hidden = np.dot(delta_output, W2.T) * Y1 * (1.0 - Y1)
         
-        # Atualização dos pesos (Regra Delta)
-        W2 += eta * np.dot(Y1.T, delta_output) / num_samples
-        b2 += eta * np.sum(delta_output, axis=0, keepdims=True) / num_samples
+        # Gradients
+        gradW2 = np.dot(Y1.T, delta_output) / num_samples
+        gradb2 = np.sum(delta_output, axis=0, keepdims=True) / num_samples
+        gradW1 = np.dot(X.T, delta_hidden) / num_samples
+        gradb1 = np.sum(delta_hidden, axis=0, keepdims=True) / num_samples
         
-        W1 += eta * np.dot(X.T, delta_hidden) / num_samples
-        b1 += eta * np.sum(delta_hidden, axis=0, keepdims=True) / num_samples
+        # Atualização com Momentum
+        vW2 = eta * gradW2 + alpha * vW2
+        vb2 = eta * gradb2 + alpha * vb2
+        vW1 = eta * gradW1 + alpha * vW1
+        vb1 = eta * gradb1 + alpha * vb1
+        
+        W2 += vW2
+        b2 += vb2
+        W1 += vW1
+        b1 += vb1
         
         epoch += 1
         
     end_time = time.time()
+    elapsed_time = end_time - start_time
     
-    return W1, b1, W2, b2, epoch, MSE, (end_time - start_time), mse_history
+    return W1, b1, W2, b2, epoch, MSE, elapsed_time, mse_history
 
 def main():
     print("===================================================================")

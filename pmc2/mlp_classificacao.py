@@ -4,13 +4,45 @@ import sys
 import time
 import matplotlib.pyplot as plt
 
-def sigmoid(v):
+from typing import Tuple, List
+
+def sigmoid(v: np.ndarray) -> np.ndarray:
+    # Usando np.clip para evitar sobressaltos e overflow
+    v = np.clip(v, -500, 500)
     return 1 / (1 + np.exp(-v))
 
-def sigmoid_derivative(y):
+def sigmoid_derivative(y: np.ndarray) -> np.ndarray:
     return y * (1 - y)
 
-def train_mlp(X, D, num_hidden=15, eta=0.1, alpha=0.0, epsilon=1e-6, max_epochs=100000, seed=42):
+def train_mlp(
+    X: np.ndarray, 
+    D: np.ndarray, 
+    num_hidden: int = 15, 
+    eta: float = 0.1, 
+    alpha: float = 0.0, 
+    epsilon: float = 1e-6, 
+    max_epochs: int = 100000, 
+    seed: int = 42
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int, List[float], float]:
+    """
+    Treina um Perceptron Multicamadas (MLP) com momentum para classificação.
+    
+    Parâmetros:
+        X: Matriz de entrada.
+        D: Matriz de saídas desejadas.
+        num_hidden: Quantidade de neurônios na camada oculta.
+        eta: Taxa de aprendizado.
+        alpha: Fator de momentum.
+        epsilon: Precisão requerida.
+        max_epochs: Limite de épocas de treinamento.
+        seed: Semente para o gerador de números aleatórios.
+        
+    Retorna:
+        W1, b1, W2, b2: Pesos e biases ajustados.
+        epochs: Quantidade de épocas executadas.
+        mse_history: Lista com histórico do EQM.
+        elapsed_time: Tempo de processamento gasto.
+    """
     num_samples, num_inputs = X.shape
     num_outputs = D.shape[1]
     

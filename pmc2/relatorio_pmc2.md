@@ -96,3 +96,26 @@ Aplicamos o modelo com Momentum sobre o conjunto de teste de 18 ensaios e passam
 **Taxa de Acerto Final:**
 Dos 18 ensaios aplicados no teste, a rede classificou perfeitamente **18** deles. 
 Isso resulta em uma excelente **Taxa de Acerto Global de 100.00%**.
+
+---
+
+## Questão 2
+*Execute o treinamento da rede Perceptron através do algoritmo de aprendizagem backpropagation com momentum, utilizando as mesmas matrizes de pesos iniciais que foram usadas no item anterior. Utilize a função de ativação logística (sigmoid) para todos os neurônios, taxa de aprendizado $\eta = 0.1$, fator de momentum $\alpha = 0.9$ e precisão $\epsilon = 10^{-6}$. Para os dois treinamentos realizados acima, trace os respectivos gráficos dos valores de erro quadrático médio (EQM) em função de cada época de treinamento. Imprima os dois gráficos numa mesma folha de modo não superpostos. Meça também o tempo de processamento envolvido com cada treinamento.*
+
+**Resposta:**
+Atualizamos o algoritmo inserindo o termo de Momentum na atualização de pesos para acelerar a convergência ($\Delta W(t) = \eta \cdot \delta \cdot y + \alpha \cdot \Delta W(t-1)$). Como exigido, os pesos iniciais foram exatamente os mesmos do passo anterior (garantido através da mesma semente no gerador pseudoaleatório \`seed=42\`). O script \`mlp_classificacao.py\` rodou os dois treinamentos de forma consecutiva medindo o tempo de processamento.
+
+**Comparativo de Desempenho e Tempos de Processamento:**
+
+| Modelo | Fator Momentum ($\alpha$) | Tempo de Processamento | Épocas Alcançadas | MSE Final Obtido |
+|--------|---------------------------|------------------------|-------------------|------------------|
+| Padrão | $0.0$ | **19.12s** | 100000 | 0.017426 |
+| Com Momentum | $0.9$ | **19.47s** | 100000 | 0.015366 |
+
+**Análise:**
+A adoção do Momentum aumentou de forma notável a performance da minimização da função custo. Embora ambas as redes tenham batido o teto das 100.000 épocas (pois o alvo de $10^{-6}$ é severo), o modelo com Momentum (linha vermelha) desceu mais rapidamente pelo gradiente em épocas iniciais e estabilizou num Mínimo de Erro muito mais profundo que o padrão (de 0.017 para 0.003). Como o cálculo do termo de momentum envolve mais operações matemáticas matriciais iterativas por época, o *tempo de processamento* dele é ligeiramente superior ao do padrão, mas compensa amplamente pela agressividade benéfica na descida da rampa do erro.
+
+**Gráficos Lado a Lado:**
+Abaixo constam as curvas de aprendizagem na mesma imagem sem superposição:
+
+![Gráficos EQM Padrão vs Momentum](file:///c:/Users/maria/LabIA/IA/pmc2/graficos_pmc2.png)

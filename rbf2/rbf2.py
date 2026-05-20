@@ -177,8 +177,10 @@ d_train = train_data[:, 3]
 X_test = test_data[:, :3]
 d_test = test_data[:, 3]
 
+from typing import Tuple
+
 # Implementacao K-Means
-def run_kmeans(X, n_clusters, seed=42):
+def run_kmeans(X: np.ndarray, n_clusters: int, seed: int = 42) -> Tuple[np.ndarray, np.ndarray]:
     np.random.seed(seed)
     indices = np.random.choice(len(X), n_clusters, replace=False)
     centers = X[indices]
@@ -212,7 +214,7 @@ def run_kmeans(X, n_clusters, seed=42):
         
     return centers, variances
 
-def gaussian_rbf(X, centers, variances):
+def gaussian_rbf(X: np.ndarray, centers: np.ndarray, variances: np.ndarray) -> np.ndarray:
     H = []
     for x in X:
         h = [1.0] # Bias

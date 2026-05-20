@@ -5,7 +5,15 @@ try:
 except ImportError:
     HAS_MATPLOTLIB = False
 
-def treinar_adaline(X, d, eta, epsilon, max_epocas):
+from typing import List, Tuple
+
+def treinar_adaline(
+    X: List[List[float]], 
+    d: List[int], 
+    eta: float, 
+    epsilon: float, 
+    max_epocas: int
+) -> Tuple[List[float], List[float], int, List[float]]:
     """
     Treina uma rede neural ADALINE (sem uso de bibliotecas externas como numpy).
     

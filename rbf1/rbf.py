@@ -49,82 +49,88 @@ train_data = np.array(train_data_raw)
 # Extrair apenas os dados com presenca de radiacao (d = 1) para o k-means
 X_rad = np.array([row[:2] for row in train_data if row[2] == 1])
 
+from typing import Tuple, List
+
 # Implementacao do K-Means manual
-np.random.seed(42)
-# Inicializando centros com dois pontos aleatorios do conjunto
-indices = np.random.choice(len(X_rad), 2, replace=False)
-centers = X_rad[indices]
+def run_kmeans(X: np.ndarray, n_clusters: int = 2, max_iters: int = 100, seed: int = 42) -> Tuple[np.ndarray, List[float]]:
+    np.random.seed(seed)
+    # Inicializando centros com dois pontos aleatorios do conjunto
+    indices = np.random.choice(len(X), n_clusters, replace=False)
+    centers = X[indices]
+    
+    for _ in range(max_iters):
+        # Atribuir aos clusters
+        labels = np.array([np.argmin([np.sum((x - c)**2) for c in centers]) for x in X])
+        # Atualizar centros
+        new_centers = np.array([X[labels == i].mean(axis=0) if len(X[labels == i]) > 0 else centers[i] for i in range(n_clusters)])
+        if np.all(centers == new_centers):
+            break
+        centers = new_centers
+        
+    variances = []
+    for i in range(n_clusters):
+        points = X[labels == i]
+        # Variancia = soma das distancias quadraticas / numero de pontos
+        var = np.mean(np.sum((points - centers[i])**2, axis=1))
+        variances.append(var)
+        
+    return centers, variances
 
-for _ in range(100):
-    # Atribuir aos clusters
-    labels = np.array([np.argmin([np.sum((x - c)**2) for c in centers]) for x in X_rad])
-    # Atualizar centros
-    new_centers = np.array([X_rad[labels == i].mean(axis=0) if len(X_rad[labels == i]) > 0 else centers[i] for i in range(2)])
-    if np.all(centers == new_centers):
-        break
-    centers = new_centers
+# Definir funcao de ativacao RBF
+def gaussian_rbf(x: np.ndarray, c: np.ndarray, var: float) -> float:
+    return float(np.exp(-np.sum((x - c)**2) / (2 * var)))
 
-variances = []
-for i in range(2):
-    points = X_rad[labels == i]
-    # Variancia = soma das distancias quadraticas / numero de pontos
-    var = np.mean(np.sum((points - centers[i])**2, axis=1))
-    variances.append(var)
+# Treinamento da camada de saida (Regra Delta)
+def train_rbf_output(
+    H_train: np.ndarray, 
+    d_train: np.ndarray, 
+    eta: float = 0.01, 
+    epsilon: float = 1e-7, 
+    seed: int = 42
+) -> Tuple[np.ndarray, int]:
+    np.random.seed(seed)
+    W = np.random.rand(H_train.shape[1]) # [w0, w1, w2]
+    epoch = 0
+    prev_mse = float('inf')
+    
+    while True:
+        for i in range(len(H_train)):
+            h = H_train[i]
+            d = d_train[i]
+            
+            y = np.dot(W, h)
+            error = d - y
+            
+            W = W + eta * error * h
+            
+        y_all = np.dot(H_train, W)
+        mse = np.mean((d_train - y_all)**2)
+        
+        if abs(prev_mse - mse) <= epsilon:
+            break
+            
+        prev_mse = mse
+        epoch += 1
+        
+    return W, epoch
 
+# Fluxo de treinamento principal
+centers, variances = run_kmeans(X_rad, 2, seed=42)
 print("Centros dos clusters:", centers)
 print("Variancias:", variances)
 
-# Definir funcao de ativacao RBF
-def gaussian_rbf(x, c, var):
-    return np.exp(-np.sum((x - c)**2) / (2 * var))
-
 # Preparar dados para o treinamento da camada de saida
-# H matrix onde cada linha e [1, h1(x), h2(x)]
 H_train = []
 for x in train_data[:, :2]:
     h1 = gaussian_rbf(x, centers[0], variances[0])
     h2 = gaussian_rbf(x, centers[1], variances[1])
-    H_train.append([1.0, h1, h2]) # bias = 1.0 (ou x0=1)
+    H_train.append([1.0, h1, h2]) # bias = 1.0
 H_train = np.array(H_train)
 d_train = train_data[:, 2]
 
-# Treinamento da camada de saida (Regra Delta)
-np.random.seed(42)
-W = np.random.rand(3) # [w0, w1, w2]
-eta = 0.01
-epsilon = 1e-7
-
-epoch = 0
-prev_mse = float('inf')
 print("\nIniciando treinamento da camada de saida...")
-
-while True:
-    error_sum = 0
-    for i in range(len(H_train)):
-        h = H_train[i]
-        d = d_train[i]
-        
-        y = np.dot(W, h)
-        error = d - y
-        
-        W = W + eta * error * h
-        
-        # Calculate error for MSE
-        y_after = np.dot(W, h)
-        error_sum += (d - y_after)**2
-        
-    # Calcular MSE sobre todos os dados apos atualizacao
-    # Pode ser feito avaliando todo o conjunto com o novo W
-    y_all = np.dot(H_train, W)
-    mse = np.mean((d_train - y_all)**2)
-    
-    if abs(prev_mse - mse) <= epsilon:
-        print(f"Convergiu na epoca {epoch}")
-        break
-        
-    prev_mse = mse
-    epoch += 1
-
+W, epoch = train_rbf_output(H_train, d_train, eta=0.01, epsilon=1e-7, seed=42)
+print(f"Convergiu na epoca {epoch}")
 print("Pesos finais:", W)
 
 # Validacao

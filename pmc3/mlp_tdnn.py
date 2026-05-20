@@ -24,13 +24,45 @@ test_data = [
 # Combina para usar no TDNN na fase de teste
 all_data = train_data + test_data
 
-def sigmoid(x):
+from typing import Tuple, List, Optional
+
+def sigmoid(x: np.ndarray) -> np.ndarray:
+    x = np.clip(x, -500, 500)
     return 1 / (1 + np.exp(-x))
 
-def sigmoid_derivative(x):
+def sigmoid_derivative(x: np.ndarray) -> np.ndarray:
     return x * (1 - x)
 
-def train_mlp(X, Y, p, N1, eta=0.1, alpha=0.8, epsilon=0.5e-6, max_epochs=100000, seed=None):
+def train_mlp(
+    X: np.ndarray, 
+    Y: np.ndarray, 
+    p: int, 
+    N1: int, 
+    eta: float = 0.1, 
+    alpha: float = 0.8, 
+    epsilon: float = 0.5e-6, 
+    max_epochs: int = 100000, 
+    seed: Optional[int] = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int, List[float]]:
+    """
+    Treina uma rede neural do tipo TDNN (MLP com atrasos) usando backpropagation com momentum.
+    
+    Parâmetros:
+        X: Dados de entrada (amostras x lags).
+        Y: Valores desejados de saída (amostras x 1).
+        p: Quantidade de atrasos (lags).
+        N1: Neurônios na camada oculta.
+        eta: Taxa de aprendizado.
+        alpha: Fator de momentum.
+        epsilon: Critério de parada do erro.
+        max_epochs: Limite de épocas de treinamento.
+        seed: Semente aleatória opcional.
+        
+    Retorna:
+        W1, b1, W2, b2: Pesos e biases.
+        epochs: Número total de épocas executadas.
+        mse_history: Histórico de EQM por época.
+    """
     if seed is not None:
         np.random.seed(seed)
     
@@ -89,13 +121,13 @@ def train_mlp(X, Y, p, N1, eta=0.1, alpha=0.8, epsilon=0.5e-6, max_epochs=100000
         
     return W1, b1, W2, b2, epoch + 1, mse_history
 
-def predict(X, W1, b1, W2, b2):
+def predict(X: np.ndarray, W1: np.ndarray, b1: np.ndarray, W2: np.ndarray, b2: np.ndarray) -> np.ndarray:
     hidden_input = np.dot(X, W1) + b1
     hidden_output = sigmoid(hidden_input)
     final_input = np.dot(hidden_output, W2) + b2
     return sigmoid(final_input)
 
-def create_dataset(data, p):
+def create_dataset(data: List[float], p: int) -> Tuple[np.ndarray, np.ndarray]:
     X, Y = [], []
     for i in range(p, len(data)):
         # x(t-1) ... x(t-p)
