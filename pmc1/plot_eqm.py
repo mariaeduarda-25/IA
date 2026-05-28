@@ -31,7 +31,7 @@ def main():
     for i in range(2):
         np.random.seed(int(time.time()) + i)
         print(f"Executando Treinamento T{i+1}...")
-        _, _, _, _, epoch, mse, duration, mse_history = train_mlp(X, D, num_hidden=10, eta=eta, epsilon=epsilon, max_epochs=max_epochs)
+        _, _, _, _, epoch, mse, duration, mse_history = train_mlp(X, D, num_hidden=10, eta=eta, alpha=0.9, epsilon=epsilon, max_epochs=max_epochs)
         histories.append(mse_history)
         print(f" Treinamento T{i+1} concluído. MSE={mse:.6f}, {epoch} épocas.")
 

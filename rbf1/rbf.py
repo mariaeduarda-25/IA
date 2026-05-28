@@ -1,49 +1,19 @@
 import numpy as np
 
-# Dados de Treinamento (Apendice)
-# x1, x2, d
-train_data_raw = [
-    [0.2563, 0.9503, -1],
-    [0.2405, 0.9018, -1],
-    [0.1157, 0.3676, 1],
-    [0.5147, 0.0167, 1],
-    [0.4127, 0.3275, 1],
-    [0.2809, 0.5830, 1],
-    [0.8263, 0.9301, -1],
-    [0.9359, 0.8724, -1],
-    [0.1096, 0.9165, -1],
-    [0.5158, 0.8545, -1],
-    [0.1334, 0.1362, 1],
-    [0.6371, 0.1439, 1],
-    [0.7052, 0.6277, -1],
-    [0.8703, 0.8666, -1],
-    [0.2612, 0.6109, 1],
-    [0.0244, 0.5279, 1],
-    [0.9588, 0.3672, -1],
-    [0.9332, 0.5499, -1],
-    [0.9623, 0.2961, -1],
-    [0.7297, 0.5776, -1],
-    [0.4560, 0.1871, 1],
-    [0.1715, 0.7713, 1],
-    [0.5571, 0.5485, -1],
-    [0.3344, 0.0259, 1],
-    [0.4803, 0.7635, -1],
-    [0.9721, 0.4850, -1],
-    [0.8318, 0.7844, -1],
-    [0.1373, 0.0292, 1],
-    [0.3660, 0.8581, -1],
-    [0.3626, 0.7302, -1],
-    [0.6474, 0.3324, 1],
-    [0.3461, 0.2398, 1],
-    [0.1353, 0.8120, 1],
-    [0.3463, 0.1017, 1],
-    [0.9086, 0.1947, -1],
-    [0.5227, 0.2321, 1],
-    [0.5153, 0.2041, 1],
-    [0.1832, 0.0661, 1],
-    [0.5015, 0.9812, -1],
-    [0.5024, 0.5274, -1]
-]
+import csv
+import os
+
+# Determinar caminho absoluto para os arquivos de contexto
+base_dir = os.path.dirname(os.path.abspath(__file__))
+train_data_path = os.path.join(base_dir, 'context', 'train_data.csv')
+
+train_data_raw = []
+with open(train_data_path, 'r') as f:
+    reader = csv.reader(f)
+    next(reader)  # Pular cabeçalho
+    for row in reader:
+        train_data_raw.append([float(row[0]), float(row[1]), float(row[2])])
+
 train_data = np.array(train_data_raw)
 
 # Extrair apenas os dados com presenca de radiacao (d = 1) para o k-means
@@ -134,18 +104,15 @@ print(f"Convergiu na epoca {epoch}")
 print("Pesos finais:", W)
 
 # Validacao
-test_data_raw = [
-    [0.8705, 0.9329, -1],
-    [0.0388, 0.2703, 1],
-    [0.8236, 0.4458, -1],
-    [0.7075, 0.1502, 1],
-    [0.9587, 0.8663, -1],
-    [0.6115, 0.9365, -1],
-    [0.3534, 0.3646, 1],
-    [0.3268, 0.2766, 1],
-    [0.6129, 0.4518, -1],
-    [0.9948, 0.4962, -1]
-]
+test_data_path = os.path.join(base_dir, 'context', 'test_data.csv')
+
+test_data_raw = []
+with open(test_data_path, 'r') as f:
+    reader = csv.reader(f)
+    next(reader)  # Pular cabeçalho
+    for row in reader:
+        test_data_raw.append([float(row[0]), float(row[1]), float(row[2])])
+
 test_data = np.array(test_data_raw)
 
 H_test = []

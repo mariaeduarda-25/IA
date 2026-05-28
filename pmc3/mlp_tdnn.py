@@ -152,7 +152,7 @@ for net in networks:
     for i in range(3):
         seed = 42 + i + net["p"]*10
         print(f"  Treinamento {i+1}...")
-        W1, b1, W2, b2, epochs, mse_hist = train_mlp(X_train, Y_train, net["p"], net["N1"], seed=seed)
+        W1, b1, W2, b2, epochs, mse_hist = train_mlp(X_train, Y_train, net["p"], net["N1"], eta=0.1, alpha=0.8, epsilon=0.5e-6, seed=seed)
         net_results.append({
             "W1": W1, "b1": b1, "W2": W2, "b2": b2,
             "epochs": epochs,

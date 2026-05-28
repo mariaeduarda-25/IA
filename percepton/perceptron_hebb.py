@@ -62,12 +62,12 @@ def treinar_perceptron(
         X_input: Lista contendo as amostras de entrada (3 características cada).
         d_input: Lista com as saídas desejadas correspondentes (-1.0 ou 1.0).
         eta_param: Taxa de aprendizado.
-        limit_epochs: Número máximo de épocas permitidas.
+        limit_epochs: Número máximo de épocas (na Regra de Hebb Supervisionada, o treinamento ocorre em 1 única época).
         
     Retorna:
         pesos_iniciais: Vetor NumPy com os pesos iniciais gerados aleatoriamente.
         pesos: Vetor NumPy com os pesos finais após treinamento.
-        epoca: Número de épocas necessárias para a convergência.
+        epoca: Número de épocas necessárias para a convergência (sempre 1 época na regra de Hebb).
     """
     X_arr = np.array(X_input, dtype=np.float64)
     d_arr = np.array(d_input, dtype=np.float64)
@@ -81,27 +81,13 @@ def treinar_perceptron(
     # Inserindo o bias x0 = 1 para cada amostra de entrada
     X_bias = np.hstack((np.ones((num_amostras, 1), dtype=np.float64), X_arr))
     
-    epoca = 0
-    erro_existente = True
-    
-    while erro_existente and epoca < limit_epochs:
-        erro_existente = False
+    # Regra de Hebb Supervisionada: atualização incondicional para todos os padrões
+    # Realizada em uma única época (1 passagem completa)
+    for i in range(num_amostras):
+        # Regra de Hebb Supervisionada: w = w + eta * d * x
+        pesos += eta_param * d_arr[i] * X_bias[i]
         
-        for i in range(num_amostras):
-            # Campo local induzido (v = w * x)
-            v = np.dot(X_bias[i], pesos)
-            
-            # Função de ativação (Sinal / Degrau Bipolar)
-            y = 1.0 if v >= 0.0 else -1.0
-            
-            # Regra de Hebb Supervisionada (ajuste ocorre apenas se y != d[i])
-            if y != d_arr[i]:
-                # Regra de Hebb Supervisionada: w = w + eta * d * x
-                pesos += eta_param * d_arr[i] * X_bias[i]
-                erro_existente = True
-                
-        epoca += 1
-        
+    epoca = 1
     return pesos_iniciais, pesos, epoca
 
 # ---------------------------------------------------------

@@ -18,7 +18,7 @@ def train_mlp(
     D: np.ndarray, 
     num_hidden: int = 10, 
     eta: float = 0.1, 
-    alpha: float = 0.0, 
+    alpha: float = 0.9, 
     epsilon: float = 1e-6, 
     max_epochs: int = 100000
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, int, float, float, List[float]]:
@@ -157,7 +157,7 @@ def main():
         
         print(f"Iniciando Treinamento {i+1}/{num_trainings}...")
         
-        W1, b1, W2, b2, epoch, mse, duration, mse_history = train_mlp(X, D, num_hidden=10, eta=eta, epsilon=epsilon, max_epochs=max_epochs)
+        W1, b1, W2, b2, epoch, mse, duration, mse_history = train_mlp(X, D, num_hidden=10, eta=eta, alpha=0.9, epsilon=epsilon, max_epochs=max_epochs)
         
         results.append({
             'treinamento': i + 1,

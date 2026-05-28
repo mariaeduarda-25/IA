@@ -33,7 +33,7 @@ def main():
     print("Training 5 models...")
     for i in range(5):
         np.random.seed(42 + i)
-        W1, b1, W2, b2, _, _, _, _ = train_mlp(X_train, D_train, num_hidden=10, eta=0.1, epsilon=1e-6, max_epochs=100000)
+        W1, b1, W2, b2, _, _, _, _ = train_mlp(X_train, D_train, num_hidden=10, eta=0.1, alpha=0.9, epsilon=1e-6, max_epochs=100000)
         models.append((W1, b1, W2, b2))
         print(f"Model {i+1} trained.")
 
